@@ -1,0 +1,5 @@
+# Local database credentials
+src/main/resources/hibernate.cfg.xml
+target/
+hibernate.cfg.xml
+*.class
