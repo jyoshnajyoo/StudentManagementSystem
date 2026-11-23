@@ -35,7 +35,6 @@ StudentManagementSystem
 │       │       ├── ui
 │       │       └── util
 │       └── resources
-│           ├── hibernate.cfg.xml
 │           └── hibernate.cfg.xml.example
 ├── .gitignore
 ├── pom.xml
