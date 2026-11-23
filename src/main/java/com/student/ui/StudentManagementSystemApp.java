@@ -11,7 +11,10 @@ import com.student.util.HibernateUtil;
 
 public class StudentManagementSystemApp {
 
-    static Scanner sc = new Scanner(System.in);
+    private static final Scanner sc = new Scanner(System.in);
+
+    private static final String EMAIL_REGEX =
+            "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$";
 
     public static void main(String[] args) {
 
@@ -29,162 +32,321 @@ public class StudentManagementSystemApp {
 
             int choice = readNumber("Enter your choice: ", 1, 6);
 
-            switch (choice) {
+            try {
 
-            case 1: {
+                switch (choice) {
 
-                System.out.println("\n----- Add Student -----");
+                    case 1: {
 
-                String name = readText("Enter Student Name: ");
-                int age = readNumber("Enter Age: ", 1, 100);
-                String email = readEmail(service, 0);
-                String course = readText("Enter Course: ");
-                BigDecimal marks = readMarks();
+                        System.out.println("\n----- Add Student -----");
 
-                Student student = new Student(
-                        name, age, email, course, marks);
+                        String name = readText("Enter Student Name: ");
+                        int age = readNumber("Enter Age: ", 1, 100);
+                        String email = readEmail(service);
+                        String course = readText("Enter Course: ");
+                        BigDecimal marks = readMarks();
 
-                service.addStudent(student);
+                        Student student = new Student(
+                                name, age, email, course, marks);
 
-                break;
-            }
+                        service.addStudent(student);
 
-            case 2: {
-
-                System.out.println("\n----- Student Details -----");
-
-                List<Student> students = service.getAllStudents();
-
-                if (students.isEmpty()) {
-
-                    System.out.println("No students found!");
-
-                } else {
-
-                    for (Student student : students) {
-
-                        System.out.println("Student ID: " + student.getStudentId());
-                        System.out.println("Name: " + student.getName());
-                        System.out.println("Age: " + student.getAge());
-                        System.out.println("Email: " + student.getEmail());
-                        System.out.println("Course: " + student.getCourse());
-                        System.out.println("Marks: " + student.getMarks());
-                        System.out.println("-------------------------");
-                    }
-                }
-
-                break;
-            }
-
-            case 3: {
-
-                System.out.println("\n----- Update Student -----");
-
-                int updateId = readNumber("Enter Student ID: ", 1, 100000);
-
-                Student existingStudent = service.getStudentById(updateId);
-
-                if (existingStudent != null) {
-
-                    System.out.println("Enter New Details");
-
-                    String name = readText("Enter Student Name: ");
-                    int age = readNumber("Enter Age: ", 1, 100);
-                    String email = readEmail(service, updateId);
-                    String course = readText("Enter Course: ");
-                    BigDecimal marks = readMarks();
-
-                    Student updatedStudent = new Student(
-                            name, age, email, course, marks);
-
-                    service.updateStudent(updateId, updatedStudent);
-
-                } else {
-
-                    System.out.println("Student not found!");
-                }
-
-                break;
-            }
-
-            case 4: {
-
-                System.out.println("\n----- Delete Student -----");
-
-                int deleteId = readNumber("Enter Student ID: ", 1, 100000);
-
-                Student deleteStudent = service.getStudentById(deleteId);
-
-                if (deleteStudent != null) {
-
-                    System.out.println("Student Name: " + deleteStudent.getName());
-
-                    System.out.println("Are you sure you want to delete this student?");
-                    System.out.println("1. Yes");
-                    System.out.println("2. No");
-
-                    int confirm = readNumber("Enter your choice: ", 1, 2);
-
-                    if (confirm == 1) {
-
-                        service.deleteStudent(deleteId);
-
-                    } else {
-
-                        System.out.println("Student deletion cancelled!");
+                        break;
                     }
 
-                } else {
+                    case 2: {
 
-                    System.out.println("Student not found!");
+                        System.out.println("\n----- Student Details -----");
+
+                        List<Student> students = service.getAllStudents();
+
+                        if (students.isEmpty()) {
+
+                            System.out.println("No students found!");
+
+                        } else {
+
+                            for (Student student : students) {
+                                displayStudentDetails(student);
+                            }
+                        }
+
+                        break;
+                    }
+
+                    case 3: {
+
+                        System.out.println("\n----- Update Student -----");
+
+                        int updateId = readNumber(
+                                "Enter Student ID: ", 1, 100000);
+
+                        Student existingStudent =
+                                service.getStudentById(updateId);
+
+                        if (existingStudent != null) {
+
+                            System.out.println(
+                                    "Enter New Details (Press Enter to keep existing value)");
+
+                            String name = readTextOrKeep(
+                                    "Enter Student Name",
+                                    existingStudent.getName());
+
+                            int age = readAgeOrKeep(
+                                    existingStudent.getAge());
+
+                            String email = readEmailOrKeep(
+                                    service,
+                                    updateId,
+                                    existingStudent.getEmail());
+
+                            String course = readTextOrKeep(
+                                    "Enter Course",
+                                    existingStudent.getCourse());
+
+                            BigDecimal marks = readMarksOrKeep(
+                                    existingStudent.getMarks());
+
+                            Student updatedStudent = new Student(
+                                    name, age, email, course, marks);
+
+                            service.updateStudent(
+                                    updateId, updatedStudent);
+
+                        } else {
+
+                            System.out.println("Student not found!");
+                        }
+
+                        break;
+                    }
+
+                    case 4: {
+
+                        System.out.println("\n----- Delete Student -----");
+
+                        int deleteId = readNumber(
+                                "Enter Student ID: ", 1, 100000);
+
+                        Student student =
+                                service.getStudentById(deleteId);
+
+                        if (student != null) {
+
+                            System.out.println(
+                                    "Student Name: " + student.getName());
+
+                            System.out.println(
+                                    "Are you sure you want to delete this student?");
+
+                            System.out.println("1. Yes");
+                            System.out.println("2. No");
+
+                            int confirm = readNumber(
+                                    "Enter your choice: ", 1, 2);
+
+                            if (confirm == 1) {
+
+                                service.deleteStudent(deleteId);
+
+                            } else {
+
+                                System.out.println(
+                                        "Student deletion cancelled!");
+                            }
+
+                        } else {
+
+                            System.out.println("Student not found!");
+                        }
+
+                        break;
+                    }
+
+                    case 5: {
+
+                        System.out.println("\n----- Search Student -----");
+
+                        int searchId = readNumber(
+                                "Enter Student ID: ", 1, 100000);
+
+                        Student student =
+                                service.getStudentById(searchId);
+
+                        if (student != null) {
+
+                            System.out.println("\nStudent Details");
+                            displayStudentDetails(student);
+
+                        } else {
+
+                            System.out.println("Student not found!");
+                        }
+
+                        break;
+                    }
+
+                    case 6:
+
+                        System.out.println(
+                                "Thank you for using Student Management System!");
+
+                        HibernateUtil.shutdown();
+                        sc.close();
+
+                        return;
                 }
 
-                break;
+            } catch (RuntimeException e) {
+
+                System.out.println(
+                        "Something went wrong! Please try again.");
+
+                e.printStackTrace();
+            }
+        }
+    }
+
+    // DISPLAY STUDENT DETAILS
+    private static void displayStudentDetails(Student student) {
+
+        System.out.println("-------------------------");
+        System.out.println("Student ID: " + student.getStudentId());
+        System.out.println("Name: " + student.getName());
+        System.out.println("Age: " + student.getAge());
+        System.out.println("Email: " + student.getEmail());
+        System.out.println("Course: " + student.getCourse());
+        System.out.println("Marks: " + student.getMarks());
+        System.out.println("-------------------------");
+    }
+
+    // READ TEXT OR KEEP EXISTING VALUE
+    private static String readTextOrKeep(
+            String message, String currentValue) {
+
+        System.out.print(message + " [" + currentValue + "]: ");
+
+        String value = sc.nextLine().trim();
+
+        if (value.isEmpty()) {
+            return currentValue;
+        }
+
+        return value;
+    }
+
+    // READ AGE OR KEEP EXISTING VALUE
+    private static int readAgeOrKeep(int currentAge) {
+
+        while (true) {
+
+            System.out.print("Enter Age [" + currentAge + "]: ");
+
+            String value = sc.nextLine().trim();
+
+            if (value.isEmpty()) {
+                return currentAge;
             }
 
-            case 5: {
+            try {
 
-                System.out.println("\n----- Search Student -----");
+                int age = Integer.parseInt(value);
 
-                int searchId = readNumber("Enter Student ID: ", 1, 100000);
-
-                Student searchStudent = service.getStudentById(searchId);
-
-                if (searchStudent != null) {
-
-                    System.out.println("\nStudent Details");
-                    System.out.println("-------------------------");
-                    System.out.println("Student ID: " + searchStudent.getStudentId());
-                    System.out.println("Name: " + searchStudent.getName());
-                    System.out.println("Age: " + searchStudent.getAge());
-                    System.out.println("Email: " + searchStudent.getEmail());
-                    System.out.println("Course: " + searchStudent.getCourse());
-                    System.out.println("Marks: " + searchStudent.getMarks());
-                    System.out.println("-------------------------");
-
-                } else {
-
-                    System.out.println("Student not found!");
+                if (age >= 1 && age <= 100) {
+                    return age;
                 }
 
-                break;
+                System.out.println(
+                        "Age must be between 1 and 100!");
+
+            } catch (NumberFormatException e) {
+
+                System.out.println(
+                        "Please enter a valid number!");
+            }
+        }
+    }
+
+    // CHECK EMAIL FORMAT
+    private static boolean isValidEmail(String email) {
+
+        return email.matches(EMAIL_REGEX);
+    }
+
+    // READ EMAIL OR KEEP EXISTING VALUE
+    private static String readEmailOrKeep(
+            StudentService service,
+            int studentId,
+            String currentEmail) {
+
+        while (true) {
+
+            System.out.print("Enter Email [" + currentEmail + "]: ");
+
+            String email = sc.nextLine().trim();
+
+            if (email.isEmpty()) {
+                return currentEmail;
             }
 
-            case 6:
+            if (isValidEmail(email)) {
 
-                System.out.println("Thank you for using Student Management System!");
+                boolean emailUsed =
+                        service.isEmailUsedByOtherStudent(
+                                email, studentId);
 
-                HibernateUtil.shutdown();
+                if (!emailUsed) {
+                    return email;
+                }
 
-                sc.close();
+                System.out.println(
+                        "Email already exists! Enter another email.");
 
-                return;
+            } else {
+
+                System.out.println("Please enter a valid email!");
+            }
+        }
+    }
+
+    // READ MARKS OR KEEP EXISTING VALUE
+    private static BigDecimal readMarksOrKeep(
+            BigDecimal currentMarks) {
+
+        while (true) {
+
+            System.out.print("Enter Marks [" + currentMarks + "]: ");
+
+            String value = sc.nextLine().trim();
+
+            if (value.isEmpty()) {
+                return currentMarks;
+            }
+
+            try {
+
+                BigDecimal marks = new BigDecimal(value);
+
+                if (marks.compareTo(BigDecimal.ZERO) >= 0
+                        && marks.compareTo(new BigDecimal("100")) <= 0) {
+
+                    return marks;
+                }
+
+                System.out.println(
+                        "Marks must be between 0 and 100!");
+
+            } catch (NumberFormatException e) {
+
+                System.out.println("Please enter valid marks!");
             }
         }
     }
 
     // READ NUMBER
-    public static int readNumber(String message, int min, int max) {
+    private static int readNumber(
+            String message, int min, int max) {
 
         while (true) {
 
@@ -192,23 +354,27 @@ public class StudentManagementSystemApp {
 
             try {
 
-                int number = Integer.parseInt(sc.nextLine());
+                int number = Integer.parseInt(
+                        sc.nextLine().trim());
 
                 if (number >= min && number <= max) {
                     return number;
                 }
 
-                System.out.println("Please enter a number between " + min + " and " + max);
+                System.out.println(
+                        "Please enter a number between "
+                                + min + " and " + max);
 
             } catch (NumberFormatException e) {
 
-                System.out.println("Please enter a valid number!");
+                System.out.println(
+                        "Please enter a valid number!");
             }
         }
     }
 
     // READ TEXT
-    public static String readText(String message) {
+    private static String readText(String message) {
 
         while (true) {
 
@@ -220,12 +386,13 @@ public class StudentManagementSystemApp {
                 return value;
             }
 
-            System.out.println("This field cannot be empty!");
+            System.out.println(
+                    "This field cannot be empty!");
         }
     }
 
     // READ EMAIL
-    public static String readEmail(StudentService service, int studentId) {
+    private static String readEmail(StudentService service) {
 
         while (true) {
 
@@ -233,34 +400,28 @@ public class StudentManagementSystemApp {
 
             String email = sc.nextLine().trim();
 
-            if (email.matches("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$")) {
+            if (isValidEmail(email)) {
 
-                boolean emailUsed;
-
-                if (studentId == 0) {
-
-                    emailUsed = service.isEmailAlreadyUsed(email);
-
-                } else {
-
-                    emailUsed = service.isEmailUsedByOtherStudent(email, studentId);
-                }
+                boolean emailUsed =
+                        service.isEmailAlreadyUsed(email);
 
                 if (!emailUsed) {
                     return email;
                 }
 
-                System.out.println("Email already exists! Enter another email.");
+                System.out.println(
+                        "Email already exists! Enter another email.");
 
             } else {
 
-                System.out.println("Please enter a valid email!");
+                System.out.println(
+                        "Please enter a valid email!");
             }
         }
     }
 
     // READ MARKS
-    public static BigDecimal readMarks() {
+    private static BigDecimal readMarks() {
 
         while (true) {
 
@@ -268,7 +429,8 @@ public class StudentManagementSystemApp {
 
             try {
 
-                BigDecimal marks = new BigDecimal(sc.nextLine());
+                BigDecimal marks = new BigDecimal(
+                        sc.nextLine().trim());
 
                 if (marks.compareTo(BigDecimal.ZERO) >= 0
                         && marks.compareTo(new BigDecimal("100")) <= 0) {
@@ -276,11 +438,13 @@ public class StudentManagementSystemApp {
                     return marks;
                 }
 
-                System.out.println("Marks must be between 0 and 100!");
+                System.out.println(
+                        "Marks must be between 0 and 100!");
 
             } catch (NumberFormatException e) {
 
-                System.out.println("Please enter valid marks!");
+                System.out.println(
+                        "Please enter valid marks!");
             }
         }
     }

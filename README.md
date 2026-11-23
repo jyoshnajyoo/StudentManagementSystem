@@ -1,14 +1,14 @@
 # Student Management System
 
-A simple Java-based Student Management System developed using Hibernate and MySQL. This console application helps manage student records with basic CRUD operations.
+A simple console-based Student Management System developed using Java, Hibernate, and MySQL. This application allows users to manage student records through basic CRUD operations.
 
 ## Technologies Used
 
-- Java
-- Hibernate ORM
-- MySQL
+- Java 21
+- Hibernate ORM 6.6
+- MySQL 8
 - Maven
-- Eclipse IDE
+- Jakarta Persistence API
 
 ## Features
 
@@ -16,60 +16,53 @@ A simple Java-based Student Management System developed using Hibernate and MySQ
 - View all students
 - Search student by ID
 - Update student details
-- Delete student records
-- Validate user inputs
-- Check for duplicate email addresses
+- Delete student with confirmation
+- Validate student inputs
+- Check duplicate email addresses
+- Store student records in MySQL database
 
 ## Project Structure
 
 ```text
 StudentManagementSystem
-│
-├── src/main/java
-│   └── com.student
-│       ├── model
-│       │   └── Student.java
-│       ├── dao
-│       │   └── StudentDao.java
-│       ├── service
-│       │   └── StudentService.java
-│       ├── ui
-│       │   └── StudentManagementSystemApp.java
-│       └── util
-│           └── HibernateUtil.java
-│
-├── src/main/resources
-│   └── hibernate.cfg.xml.example
-│
+├── src
+│   └── main
+│       ├── java
+│       │   └── com.student
+│       │       ├── dao
+│       │       ├── model
+│       │       ├── service
+│       │       ├── ui
+│       │       └── util
+│       └── resources
+│           ├── hibernate.cfg.xml
+│           └── hibernate.cfg.xml.example
+├── .gitignore
 ├── pom.xml
 └── README.md
 ```
 
 ## Database Setup
 
-1. Create a MySQL database named `student_db`.
-2. Configure your local database connection in `hibernate.cfg.xml`.
-3. Keep your database username and password private.
-4. Hibernate creates or updates the required table when the application runs.
+1. Install MySQL.
+2. Create a database:
+
+```sql
+CREATE DATABASE student_db;
+```
+
+3. Copy `hibernate.cfg.xml.example` and rename the copy to `hibernate.cfg.xml`.
+4. Update the MySQL username and password in `hibernate.cfg.xml`.
+5. Hibernate automatically creates or updates the required table.
 
 ## How to Run
 
-1. Clone or download this repository.
-2. Import the project into Eclipse as an existing Maven project.
-3. Update Maven dependencies.
-4. Configure your local Hibernate database connection.
-5. Open `StudentManagementSystemApp.java`.
-6. Run the application as a Java Application.
+1. Clone this repository.
+2. Open the project in Eclipse or IntelliJ IDEA.
+3. Update the database credentials.
+4. Reload Maven dependencies.
+5. Run `StudentManagementSystemApp.java`.
 
-## Learning Outcomes
+## Author
 
-- Understanding Java object-oriented programming
-- Working with Hibernate ORM
-- Connecting Java applications to MySQL
-- Implementing CRUD operations
-- Understanding DAO and Service layers
-- Handling user input and validation
-
-## Project Type
-
-Console-based Java application.
+Jyoshna Karanam

@@ -14,11 +14,10 @@ public class StudentDao {
     // INSERT STUDENT
     public void saveStudent(Student student) {
 
-        Session session = HibernateUtil.getSessionFactory().openSession();
-
         Transaction transaction = null;
 
-        try {
+        try (Session session =
+                HibernateUtil.getSessionFactory().openSession()) {
 
             transaction = session.beginTransaction();
 
@@ -34,56 +33,48 @@ public class StudentDao {
                 transaction.rollback();
             }
 
-            e.printStackTrace();
-
-        } finally {
-
-            session.close();
+            throw new RuntimeException(
+                    "Unable to save student", e);
         }
     }
 
     // VIEW ALL STUDENTS
     public List<Student> getAllStudents() {
 
-        Session session = HibernateUtil.getSessionFactory().openSession();
+        try (Session session =
+                HibernateUtil.getSessionFactory().openSession()) {
 
-        try {
-
-            List<Student> students = session
-                    .createQuery("from Student", Student.class)
+            return session.createQuery(
+                    "from Student", Student.class)
                     .list();
 
-            return students;
+        } catch (Exception e) {
 
-        } finally {
-
-            session.close();
+            throw new RuntimeException(
+                    "Unable to retrieve students", e);
         }
     }
 
     // GET STUDENT BY ID
     public Student getStudentById(int studentId) {
 
-        Session session = HibernateUtil.getSessionFactory().openSession();
+        try (Session session =
+                HibernateUtil.getSessionFactory().openSession()) {
 
-        try {
+            return session.get(Student.class, studentId);
 
-            Student student = session.get(Student.class, studentId);
+        } catch (Exception e) {
 
-            return student;
-
-        } finally {
-
-            session.close();
+            throw new RuntimeException(
+                    "Unable to find student", e);
         }
     }
 
     // CHECK DUPLICATE EMAIL
     public boolean isEmailAlreadyUsed(String email) {
 
-        Session session = HibernateUtil.getSessionFactory().openSession();
-
-        try {
+        try (Session session =
+                HibernateUtil.getSessionFactory().openSession()) {
 
             Long count = session.createQuery(
                     "select count(s) from Student s where s.email = :email",
@@ -93,21 +84,23 @@ public class StudentDao {
 
             return count > 0;
 
-        } finally {
+        } catch (Exception e) {
 
-            session.close();
+            throw new RuntimeException(
+                    "Unable to check email", e);
         }
     }
 
     // CHECK EMAIL WHILE UPDATING
-    public boolean isEmailUsedByOtherStudent(String email, int studentId) {
+    public boolean isEmailUsedByOtherStudent(
+            String email, int studentId) {
 
-        Session session = HibernateUtil.getSessionFactory().openSession();
-
-        try {
+        try (Session session =
+                HibernateUtil.getSessionFactory().openSession()) {
 
             Long count = session.createQuery(
-                    "select count(s) from Student s where s.email = :email and s.studentId != :id",
+                    "select count(s) from Student s " +
+                    "where s.email = :email and s.studentId != :id",
                     Long.class)
                     .setParameter("email", email)
                     .setParameter("id", studentId)
@@ -115,24 +108,26 @@ public class StudentDao {
 
             return count > 0;
 
-        } finally {
+        } catch (Exception e) {
 
-            session.close();
+            throw new RuntimeException(
+                    "Unable to check student email", e);
         }
     }
 
     // UPDATE STUDENT
-    public void updateStudent(int studentId, Student updatedStudent) {
-
-        Session session = HibernateUtil.getSessionFactory().openSession();
+    public void updateStudent(
+            int studentId, Student updatedStudent) {
 
         Transaction transaction = null;
 
-        try {
+        try (Session session =
+                HibernateUtil.getSessionFactory().openSession()) {
 
             transaction = session.beginTransaction();
 
-            Student student = session.get(Student.class, studentId);
+            Student student =
+                    session.get(Student.class, studentId);
 
             if (student != null) {
 
@@ -142,14 +137,16 @@ public class StudentDao {
                 student.setCourse(updatedStudent.getCourse());
                 student.setMarks(updatedStudent.getMarks());
 
+                transaction.commit();
+
                 System.out.println("Student updated successfully!");
 
             } else {
 
+                transaction.commit();
+
                 System.out.println("Student not found!");
             }
-
-            transaction.commit();
 
         } catch (Exception e) {
 
@@ -157,39 +154,38 @@ public class StudentDao {
                 transaction.rollback();
             }
 
-            e.printStackTrace();
-
-        } finally {
-
-            session.close();
+            throw new RuntimeException(
+                    "Unable to update student", e);
         }
     }
 
     // DELETE STUDENT
     public void deleteStudent(int studentId) {
 
-        Session session = HibernateUtil.getSessionFactory().openSession();
-
         Transaction transaction = null;
 
-        try {
+        try (Session session =
+                HibernateUtil.getSessionFactory().openSession()) {
 
             transaction = session.beginTransaction();
 
-            Student student = session.get(Student.class, studentId);
+            Student student =
+                    session.get(Student.class, studentId);
 
             if (student != null) {
 
                 session.remove(student);
 
+                transaction.commit();
+
                 System.out.println("Student deleted successfully!");
 
             } else {
 
+                transaction.commit();
+
                 System.out.println("Student not found!");
             }
-
-            transaction.commit();
 
         } catch (Exception e) {
 
@@ -197,11 +193,8 @@ public class StudentDao {
                 transaction.rollback();
             }
 
-            e.printStackTrace();
-
-        } finally {
-
-            session.close();
+            throw new RuntimeException(
+                    "Unable to delete student", e);
         }
     }
 }

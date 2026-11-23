@@ -1,5 +1,15 @@
+
+# Maven build files
+target/
+
+# Eclipse files
+.classpath
+.project
+.settings/
+
+# IntelliJ files
+.idea/
+*.iml
+
 # Local database credentials
 src/main/resources/hibernate.cfg.xml
-target/
-hibernate.cfg.xml
-*.class
